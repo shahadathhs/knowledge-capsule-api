@@ -7,7 +7,6 @@ pre-commit:
       run: go vet ./...
     tidy:
       run: go mod tidy
-  files: ^.*\.go$
 
 pre-push:
   parallel: false

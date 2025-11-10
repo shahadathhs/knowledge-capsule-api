@@ -1,0 +1,15 @@
+services:
+  api:
+    container_name: knowledge-capsule-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    ports:
+      - "8080:8080"
+    environment:
+      - GO_ENV=development
+    command: air -c .air.toml
+    restart: unless-stopped
