@@ -1,5 +1,7 @@
 services:
   api:
+    image: shahadathhs/knowledge-capsule-api
+    platform: 
     container_name: knowledge-capsule-api
     build:
       context: .
@@ -12,4 +14,4 @@ services:
     environment:
       - GO_ENV=development
     command: air -c .air.toml
-    restart: unless-stopped
+    restart: always

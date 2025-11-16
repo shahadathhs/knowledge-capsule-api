@@ -16,8 +16,14 @@ bin/
 pkg/
 *.mod.tmp
 
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
 # IDE/editor settings
-.vscode/
 .idea/
 *.swp
 *.swo
