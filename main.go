@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"time"
 
+	"knowledge-capsule-api/config"
 	"knowledge-capsule-api/handlers"
 	"knowledge-capsule-api/middleware"
 )
 
 func main() {
+	cfg := config.Load()
 	mux := http.NewServeMux()
 
 	// Default routes
@@ -30,12 +32,12 @@ func main() {
 	handler := middleware.Recover(middleware.Logger(mux))
 
 	server := &http.Server{
-		Addr:         ":8080",
+		Addr:         ":" + cfg.Port,
 		Handler:      handler,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
-	log.Println("Server running at http://localhost:8080")
+	log.Printf("Server running in %s mode on port %s\n", cfg.Env, cfg.Port)
 	log.Fatal(server.ListenAndServe())
 }

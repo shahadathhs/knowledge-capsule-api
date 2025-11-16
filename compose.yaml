@@ -41,14 +41,14 @@ services:
       dockerfile: Dockerfile.dev   # separate Dockerfile for Air
 
     ports:
-      - "8081:8080"  # map dev to a different port
+      - "8081:${PORT:-8080}"  # map dev to a different port
 
     env_file:
       - .env
     
     environment:
       GO_ENV: development
-      PORT: 8080
+      PORT: 8088
 
     command: ["air", "-c", ".air.toml"]
 

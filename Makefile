@@ -51,6 +51,20 @@ help:
 	@echo "  make images                 docker compose images"
 
 # -------------------------
+# Environment sync
+# -------------------------
+SYNC_ENV_SCRIPT := ./scripts/sync-env.sh
+
+sync-env:
+	@echo "🌱 Syncing .env variables to environment..."
+	@if [ -f $(SYNC_ENV_SCRIPT) ]; then \
+		source $(SYNC_ENV_SCRIPT); \
+		echo "✅ Environment variables loaded from .env"; \
+	else \
+		echo "⚠️  $(SYNC_ENV_SCRIPT) not found, skipping"; \
+	fi
+
+# -------------------------
 # Dev tools
 # -------------------------
 install:
@@ -65,14 +79,14 @@ hooks: install
 	@echo "🔧 Installing git hooks..."
 	@$(GOBIN)/lefthook install || lefthook install
 
-run: install
+run: install sync-env
 	@echo "🚀 Starting API (with live reload locally)..."
 	@$(GOBIN)/air || air
 
 # -------------------------
 # Build & test
 # -------------------------
-build-local:
+build-local: sync-env
 	@echo "🔨 Building local binary -> $(BUILD_OUT)"
 	@mkdir -p $(BUILD_DIR)
 	@$(GO) build $(GOFLAGS) -o $(BUILD_OUT) $(LDFLAGS) $(BUILD_FLAGS) ./main.go
