@@ -122,7 +122,7 @@ down:
 
 up-dev:
 	@echo "🐳 Starting Docker Compose For Development..."
-	@docker compose -f $(COMPOSE_FILE) --profile dev up -d --build
+	@docker compose -f $(COMPOSE_FILE) --profile dev up --build
 
 down-dev:
 	@echo "🛑 Stopping Docker Compose For Development..."

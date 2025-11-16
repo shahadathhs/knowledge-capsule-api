@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	// "knowledge-capsule-api/middleware"
 	"knowledge-capsule-api/models"
 	"knowledge-capsule-api/store"
 	"knowledge-capsule-api/utils"
