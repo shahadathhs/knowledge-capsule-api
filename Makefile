@@ -2,7 +2,10 @@
 PACKAGE_NAME := knowledge-capsule-api
 DOCKER_USERNAME := shahadathhs
 PACKAGE_VERSION := latest
+DOCKERFILE := Dockerfile
+DOCKERFILE_DEV := Dockerfile.dev
 APP_IMAGE := $(DOCKER_USERNAME)/$(PACKAGE_NAME):$(PACKAGE_VERSION)
+APP_IMAGE_DEV := $(DOCKER_USERNAME)/$(PACKAGE_NAME)-dev:$(PACKAGE_VERSION)
 COMPOSE_FILE := compose.yaml
 
 # Go / build
@@ -16,8 +19,8 @@ GOBIN ?= $(CURDIR)/.bin
 BIN_DIR := $(GOBIN)
 
 # Convenience
-.PHONY: all help install hooks run build-local build push \
-	clean fmt vet test up down restart logs containers volumes networks images
+.PHONY: all help install hooks run build-local build build-dev push push-dev \
+	clean fmt vet test up down up-dev down-dev restart-dev logs containers volumes networks images
 
 all: build-local
 
@@ -25,23 +28,25 @@ help:
 	@echo "Usage: make <target>"
 	@echo ""
 	@echo "Targets:"
-	@echo "  make all / build-local   Build local binary (default)"
-	@echo "  make build               Build Docker image ($(APP_IMAGE))"
-	@echo "  make push                Push Docker image to Docker Hub"
-	@echo "  make up                  Start containers (docker compose -f $(COMPOSE_FILE) up)"
-	@echo "  make down                Stop containers"
-	@echo "  make restart             Restart containers"
-	@echo "  make logs                Follow logs for the app container"
-	@echo "  make run                 Run dev server with live reload (air)"
-	@echo "  make hooks               Install git hooks (lefthook)"
-	@echo "  make install             Install dev tools to $(GOBIN)"
-	@echo "  make fmt                 Run go fmt ./..."
-	@echo "  make vet                 Run go vet ./..."
-	@echo "  make clean               Remove build artifacts and optionally docker images"
-	@echo "  make containers          Inspect containers"
-	@echo "  make volumes             List Docker volumes"
-	@echo "  make networks            List Docker networks"
-	@echo "  make images              Show compose images"
+	@echo "  make all / build-local      Build local binary (default)"
+	@echo "  make build                  Build production Docker image ($(APP_IMAGE))"
+	@echo "  make build-dev              Build development Docker image ($(APP_IMAGE_DEV))"
+	@echo "  make push                   Push production image ($(APP_IMAGE))"
+	@echo "  make push-dev               Push development image ($(APP_IMAGE_DEV))"
+	@echo "  make up                     Start production compose profile"
+	@echo "  make down                   Stop production compose profile"
+	@echo "  make up-dev                 Start development compose profile"
+	@echo "  make down-dev               Stop development compose profile"
+	@echo "  make run                    Run local dev server with air (uses local .bin)"
+	@echo "  make hooks                  Install git hooks (lefthook)"
+	@echo "  make install                Install dev tools into $(GOBIN)"
+	@echo "  make fmt                    Run go fmt ./..."
+	@echo "  make vet                    Run go vet ./..."
+	@echo "  make clean                  Remove build artifacts and our Docker images"
+	@echo "  make containers             docker compose ps"
+	@echo "  make volumes                docker volume ls"
+	@echo "  make networks               docker network ls"
+	@echo "  make images                 docker compose images"
 
 # -------------------------
 # Dev tools
@@ -59,7 +64,7 @@ hooks: install
 	@$(GOBIN)/lefthook install || lefthook install
 
 run: install
-	@echo "🚀 Starting API (with live reload)..."
+	@echo "🚀 Starting API (with live reload locally)..."
 	@$(GOBIN)/air || air
 
 # -------------------------
@@ -80,41 +85,60 @@ vet:
 	@$(GO) vet ./...
 
 # -------------------------
-# Docker / compose
+# Docker images (prod/dev)
 # -------------------------
 build:
-	@echo "🐳 Building Docker image: $(APP_IMAGE)"
-	@docker build -t $(APP_IMAGE) .
+	@echo "🐳 Building production Docker image: $(APP_IMAGE)"
+	@docker build -f $(DOCKERFILE) -t $(APP_IMAGE) .
+
+build-dev:
+	@echo "🐳 Building development Docker image: $(APP_IMAGE_DEV)"
+	@docker build -f $(DOCKERFILE_DEV) -t $(APP_IMAGE_DEV) .
 
 push: build
 	@echo "📤 Pushing Docker image: $(APP_IMAGE)"
 	@docker push $(APP_IMAGE)
 
+push-dev: build-dev
+	@echo "📤 Pushing Docker image: $(APP_IMAGE_DEV)"
+	@docker push $(APP_IMAGE_DEV)
+
+# -------------------------
+# Docker compose (profiles)
+# -------------------------
 up:
-	@echo "🐳 Starting Docker Compose..."
-	@docker compose -f $(COMPOSE_FILE) up --build
+	@echo "🐳 Starting Docker Compose For Production..."
+	@docker compose -f $(COMPOSE_FILE) --profile prod up -d --build
 
 down:
-	@echo "🛑 Stopping Docker Compose..."
-	@docker compose -f $(COMPOSE_FILE) down
+	@echo "🛑 Stopping Docker Compose For Production..."
+	@docker compose -f $(COMPOSE_FILE) --profile prod down
 
-restart: down up
+up-dev:
+	@echo "🐳 Starting Docker Compose For Development..."
+	@docker compose -f $(COMPOSE_FILE) --profile dev up -d --build
+
+down-dev:
+	@echo "🛑 Stopping Docker Compose For Development..."
+	@docker compose -f $(COMPOSE_FILE) --profile dev down
+
+restart-dev: down-dev up-dev
 
 logs:
-	@echo "📜 Following logs..."
-	@docker compose -f $(COMPOSE_FILE) logs -f $(PACKAGE_NAME)
+	@echo "📜 Following compose logs..."
+	@docker compose -f $(COMPOSE_FILE) logs -f
 
 containers:
-	@echo "📦 Listing Docker containers..."
+	@echo "📦 Listing Docker containers (compose)..."
 	@docker compose -f $(COMPOSE_FILE) ps
 
 volumes:
 	@echo "📦 Listing Docker volumes..."
-	@docker compose -f $(COMPOSE_FILE) volume ls
+	@docker volume ls
 
 networks:
 	@echo "🌐 Listing Docker networks..."
-	@docker compose -f $(COMPOSE_FILE) network ls
+	@docker network ls
 
 images:
 	@docker compose -f $(COMPOSE_FILE) images
@@ -122,10 +146,11 @@ images:
 # -------------------------
 # Cleanup
 # -------------------------
-clean: down
+clean: down down-dev
 	@echo "🧼 Cleaning build artifacts..."
 	@rm -rf $(BUILD_DIR) $(BIN_DIR)
-	@echo "🧽 Removing docker image (if exists): $(APP_IMAGE)"
+	@echo "🧽 Removing docker images (if exist): $(APP_IMAGE) $(APP_IMAGE_DEV)"
 	-@docker rm $(shell docker ps -a -q) || true
 	-@docker rmi $(APP_IMAGE) || true
+	-@docker rmi $(APP_IMAGE_DEV) || true
 	@echo "✅ Clean complete"
