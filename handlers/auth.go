@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -52,12 +53,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := UserStore.FindByEmail(req.Email)
 	if err != nil || user == nil {
-		utils.ErrorResponse(w, http.StatusUnauthorized, nil)
+		utils.ErrorResponse(w, http.StatusUnauthorized, errors.New("invalid credentials"))
 		return
 	}
 
 	if !utils.CheckPassword(req.Password, user.PasswordHash) {
-		utils.ErrorResponse(w, http.StatusUnauthorized, nil)
+		utils.ErrorResponse(w, http.StatusUnauthorized, errors.New("invalid credentials"))
 		return
 	}
 

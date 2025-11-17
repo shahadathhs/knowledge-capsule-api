@@ -21,5 +21,20 @@ func JSONResponse(w http.ResponseWriter, status int, success bool, message strin
 }
 
 func ErrorResponse(w http.ResponseWriter, status int, err error) {
-	JSONResponse(w, status, false, "", map[string]string{"error": err.Error()})
+	var errorMessage string
+
+	switch {
+	case err != nil:
+		errorMessage = err.Error()
+	case status >= 500:
+		errorMessage = "Internal server error"
+	case status == http.StatusUnauthorized:
+		errorMessage = "Unauthorized"
+	case status == http.StatusBadRequest:
+		errorMessage = "Bad request"
+	default:
+		errorMessage = "An error occurred"
+	}
+
+	JSONResponse(w, status, false, "", map[string]string{"error": errorMessage})
 }
