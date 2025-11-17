@@ -54,6 +54,7 @@ func (s *UserStore) FindByEmail(email string) (*models.User, error) {
 			return &u, nil
 		}
 	}
+
 	return nil, errors.New("user not found")
 }
 

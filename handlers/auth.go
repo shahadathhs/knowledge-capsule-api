@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -22,7 +21,10 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-	json.NewDecoder(r.Body).Decode(&req)
+
+	if !utils.ParseAndValidateBody(w, r, &req) {
+		return
+	}
 
 	user, err := UserStore.AddUser(req.Name, req.Email, req.Password)
 	if err != nil {
@@ -44,15 +46,27 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-	json.NewDecoder(r.Body).Decode(&req)
+	if !utils.ParseAndValidateBody(w, r, &req) {
+		return
+	}
 
 	user, err := UserStore.FindByEmail(req.Email)
-	if err != nil || !utils.CheckPassword(req.Password, user.PasswordHash) {
+	if err != nil || user == nil {
 		utils.ErrorResponse(w, http.StatusUnauthorized, nil)
 		return
 	}
 
-	token, _ := utils.GenerateJWT(user.ID, user.Email, time.Hour*24)
+	if !utils.CheckPassword(req.Password, user.PasswordHash) {
+		utils.ErrorResponse(w, http.StatusUnauthorized, nil)
+		return
+	}
+
+	token, err := utils.GenerateJWT(user.ID, user.Email, time.Hour*24)
+	if err != nil {
+		utils.ErrorResponse(w, http.StatusInternalServerError, err)
+		return
+	}
+
 	utils.JSONResponse(w, http.StatusOK, true, "Login successful", map[string]string{
 		"token": token,
 	})
