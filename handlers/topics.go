@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
-	// "knowledge-capsule-api/middleware"
 	"knowledge-capsule-api/models"
 	"knowledge-capsule-api/store"
 	"knowledge-capsule-api/utils"
@@ -13,8 +13,6 @@ import (
 var TopicStore = &store.TopicStore{FileStore: store.FileStore[models.Topic]{FilePath: "data/topics.json"}}
 
 func TopicHandler(w http.ResponseWriter, r *http.Request) {
-	// userID := r.Context().Value(middleware.UserContextKey).(string)
-
 	switch r.Method {
 	case http.MethodGet:
 		topics, _ := TopicStore.GetAllTopics()
@@ -34,6 +32,6 @@ func TopicHandler(w http.ResponseWriter, r *http.Request) {
 		utils.JSONResponse(w, http.StatusCreated, true, "Topic created", topic)
 
 	default:
-		utils.ErrorResponse(w, http.StatusMethodNotAllowed, nil)
+		utils.ErrorResponse(w, http.StatusMethodNotAllowed, errors.New("method not allowed"))
 	}
 }

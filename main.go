@@ -8,6 +8,7 @@ import (
 	"knowledge-capsule-api/config"
 	"knowledge-capsule-api/handlers"
 	"knowledge-capsule-api/middleware"
+	"knowledge-capsule-api/utils"
 )
 
 func main() {
@@ -35,6 +36,8 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to load environment variables: ", err)
 	}
+
+	utils.InitJWTSecret(cfg.JWTSecret)
 
 	server := &http.Server{
 		Addr:         ":" + cfg.Port,

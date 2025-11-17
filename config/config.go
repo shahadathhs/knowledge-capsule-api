@@ -6,8 +6,9 @@ import (
 )
 
 type Config struct {
-	Port string
-	Env  string
+	Port      string
+	Env       string
+	JWTSecret string
 }
 
 func Load() (Config, error) {
@@ -21,8 +22,14 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("missing required environment variable: GO_ENV")
 	}
 
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		return Config{}, fmt.Errorf("missing required environment variable: JWT_SECRET")
+	}
+
 	return Config{
-		Port: port,
-		Env:  env,
+		Port:      port,
+		Env:       env,
+		JWTSecret: jwtSecret,
 	}, nil
 }

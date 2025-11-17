@@ -12,7 +12,11 @@ import (
 	"knowledge-capsule-api/models"
 )
 
-var secretKey = []byte("super-secret-key")
+var secretKey []byte
+
+func InitJWTSecret(secret string) {
+	secretKey = []byte(secret)
+}
 
 // GenerateJWT creates a simple JWT token manually.
 func GenerateJWT(userID, email string, expiry time.Duration) (string, error) {

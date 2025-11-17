@@ -21,7 +21,7 @@ BIN_DIR := $(GOBIN)
 # Convenience
 .PHONY: all help install hooks run build-local build build-dev push push-dev \
 	clean fmt vet tidy up down up-dev down-dev restart restart-dev logs logs-dev \
-	containers volumes networks images
+	containers volumes networks images g-jwt sync-env
 
 all: build-local
 
@@ -49,6 +49,13 @@ help:
 	@echo "  make volumes                docker volume ls"
 	@echo "  make networks               docker network ls"
 	@echo "  make images                 docker compose images"
+
+# -------------------------
+# Generating JWT secret
+# -------------------------
+g-jwt:
+	@echo "🔑 Generating JWT secret..."
+	@./scripts/generate-jwt-secret.sh
 
 # -------------------------
 # Environment sync
