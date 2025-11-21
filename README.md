@@ -1,127 +1,180 @@
-# knowledge-capsule-api
+# Knowledge Capsule API
 
-## Personal Knowledge Capsule API
+Knowledge Capsule API is a Go-based backend service designed to manage "knowledge capsules"—bite-sized pieces of information categorized by topics and tags. It provides a RESTful API for creating, retrieving, and searching these capsules, along with user authentication and topic management.
 
-**Description:**
-A REST API that lets users store, retrieve, and manage **small “knowledge capsules”** — short text entries, quotes, links, or even personal thoughts — organized by **topics and tags**.
-Think of it as your personal lightweight “digital second brain,” but purely backend.
+## Features
 
-## Core Requirements
+-   **User Authentication**: Secure registration and login using JWT (JSON Web Tokens).
+-   **Capsule Management**: Create and retrieve knowledge capsules with support for private/public visibility.
+-   **Topic Organization**: Categorize capsules into topics.
+-   **Search**: Search functionality to find specific capsules.
+-   **Tagging**: Add tags to capsules for better organization.
+-   **File-based Storage**: Simple JSON file-based persistence for users, topics, and capsules (easy to set up, no database required).
 
-### 1. **Entities**
+## Tech Stack
 
-#### a. User
+-   **Language**: [Go](https://go.dev/) (1.23+)
+-   **Containerization**: [Docker](https://www.docker.com/)
+-   **Build Tool**: [Make](https://www.gnu.org/software/make/)
+-   **Live Reload**: [Air](https://github.com/air-verse/air)
+-   **Git Hooks**: [Lefthook](https://github.com/evilmartians/lefthook)
 
-* `id` (uuid)
-* `name`
-* `email`
-* `password_hash`
-* `created_at`
-* `updated_at`
+## Prerequisites
 
-#### b. Capsule
+Ensure you have the following installed on your system:
 
-* `id` (uuid)
-* `user_id`
-* `title`
-* `content`
-* `topic`
-* `tags` (array of strings)
-* `is_private` (bool)
-* `created_at`
-* `updated_at`
+-   [Go](https://go.dev/dl/) (1.23 or later)
+-   [Docker](https://docs.docker.com/get-docker/) & Docker Compose
+-   [Make](https://www.gnu.org/software/make/)
 
-#### c. Topic
+## Getting Started
 
-* `id` (uuid)
-* `name`
-* `description`
-* `created_at`
-* `updated_at`
+### 1. Clone the Repository
 
-## 🔧 Endpoints
+```bash
+git clone <repository-url>
+cd knowledge-capsule-api
+```
 
-### **Auth**
+### 2. Environment Setup
 
-* `POST /api/auth/register` → Create a new user
-* `POST /api/auth/login` → Return a JWT (no third-party libs if possible; use `crypto/hmac` and `encoding/base64`)
+Create a `.env` file in the root directory. You can copy the example below:
 
-### **Capsules**
+```bash
+# .env
+PORT=8080
+GO_ENV=development
+JWT_SECRET=your_super_secret_key_here
+```
 
-* `GET /api/capsules` → List user’s capsules
-* `POST /api/capsules` → Create new capsule
-* `GET /api/capsules/{id}` → Get capsule details
-* `PUT /api/capsules/{id}` → Update capsule
-* `DELETE /api/capsules/{id}` → Delete capsule
+> **Note**: You can generate a secure JWT secret using `make g-jwt`.
 
-### **Topics**
+### 3. Run with Docker (Recommended)
 
-* `GET /api/topics` → List topics
-* `POST /api/topics` → Add new topic
-* `GET /api/topics/{id}` → Get topic with its capsules
+To start the application in **development mode** (with live reload):
 
-### **Search**
+```bash
+make up-dev
+```
 
-* `GET /api/search?q=keyword` → Search capsules by title/content/tags
+The API will be available at `http://localhost:8081`.
 
-## Technical Requirements
+To start in **production mode**:
 
-* Use only Go’s **standard library** (`net/http`, `encoding/json`, `crypto`, `os`, etc.)
-* Use a **local JSON file or boltDB** (for simplicity) for data persistence
-* Implement **middleware manually**, e.g.:
+```bash
+make up
+```
 
-  * Logging
-  * Authentication (JWT)
-  * Panic recovery
-* Graceful shutdown with `context.WithTimeout`
-* Clean folder structure (e.g., `/handlers`, `/models`, `/middleware`, `/store`)
+The API will be available at `http://localhost:8080`.
 
-## Folder Structure
+To stop the containers:
+
+```bash
+make down-dev  # for dev
+# or
+make down      # for prod
+```
+
+### 4. Run Locally
+
+If you prefer to run without Docker:
+
+1.  **Install dependencies**:
+    ```bash
+    make install
+    ```
+2.  **Run the server**:
+    ```bash
+    make run
+    ```
+    This uses `air` for live reloading.
+
+    Or build and run the binary directly:
+    ```bash
+    make build-local
+    ./tmp/server
+    ```
+
+## API Documentation
+
+### Authentication
+
+-   **POST** `/api/auth/register`
+    -   Register a new user.
+    -   Body: `{ "name": "John Doe", "email": "john@example.com", "password": "securepassword" }`
+-   **POST** `/api/auth/login`
+    -   Login and receive a JWT token.
+    -   Body: `{ "email": "john@example.com", "password": "securepassword" }`
+
+### Topics
+
+*Requires Authentication Header: `Authorization: Bearer <token>`*
+
+-   **GET** `/api/topics`
+    -   Get all topics.
+-   **POST** `/api/topics`
+    -   Create a new topic.
+    -   Body: `{ "name": "Golang", "description": "All things Go" }`
+
+### Capsules
+
+*Requires Authentication Header: `Authorization: Bearer <token>`*
+
+-   **GET** `/api/capsules`
+    -   Get all capsules for the logged-in user.
+-   **POST** `/api/capsules`
+    -   Create a new capsule.
+    -   Body:
+        ```json
+        {
+          "title": "Interfaces in Go",
+          "content": "Interfaces are named collections of method signatures...",
+          "topic": "Golang",
+          "tags": ["programming", "go"],
+          "is_private": false
+        }
+        ```
+
+### Search
+
+*Requires Authentication Header: `Authorization: Bearer <token>`*
+
+-   **GET** `/api/search?q=<query>`
+    -   Search capsules by title or content.
+
+### Health Check
+
+-   **GET** `/health`
+    -   Check if the service is running.
+
+## Project Structure
 
 ```
 knowledge-capsule-api/
-│
-├── main.go
-├── handlers/
-│   ├── auth.go
-│   ├── capsule.go
-│   ├── topic.go
-│
-├── middleware/
-│   ├── auth.go
-│   ├── logger.go
-│
-├── models/
-│   ├── capsule.go
-│   ├── topic.go
-│   ├── user.go
-│
-├── store/
-│   ├── store.go  (JSON or BoltDB persistence)
-│
-└── utils/
-    ├── jwt.go
-    ├── hash.go
+├── config/         # Configuration loading
+├── handlers/       # HTTP request handlers
+├── middleware/     # HTTP middleware (Auth, Logger, etc.)
+├── models/         # Data structures
+├── store/          # Data persistence logic (JSON file store)
+├── utils/          # Utility functions
+├── data/           # JSON data storage (users.json, etc.)
+├── scripts/        # Helper scripts
+├── Dockerfile      # Production Dockerfile
+├── Dockerfile.dev  # Development Dockerfile
+├── compose.yaml    # Docker Compose configuration
+├── Makefile        # Build and run commands
+└── main.go         # Application entry point
 ```
 
-## Future Advanced Features
+## Development Commands
 
-1. **Export capsules as Markdown** → `GET /api/export`
-   Generate `.md` file dynamically using Go templates.
+The `Makefile` provides several useful commands:
 
-2. **Rate Limiting Middleware** → custom in-memory request counter with reset.
-
-3. **Versioned API** → `/api/v1/...` to simulate production API design.
-
-4. **CLI Tool (bonus)** → Add a small Go CLI that interacts with the API using `net/http`.
-
-5. **Encrypted Capsules** → Store `is_private` capsules encrypted using AES before saving to disk.
-
-## Learning Goals
-
-* Deep dive into **Go’s `net/http`** without frameworks like Gin/Fiber
-* Build **manual JWT** authentication
-* Learn about **clean architecture** in raw Go
-* Handle **middleware and request routing** yourself
-* Understand **data persistence** with JSON or local DB
-* Practice **structuring production-like Go apps**
+-   `make help`: Show all available commands.
+-   `make run`: Run the app locally with live reload.
+-   `make build-local`: Build the binary locally.
+-   `make fmt`: Format code.
+-   `make vet`: Run `go vet`.
+-   `make tidy`: Run `go mod tidy`.
+-   `make test`: Run tests (if available).
+-   `make g-jwt`: Generate a random JWT secret.
