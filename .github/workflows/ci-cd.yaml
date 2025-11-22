@@ -5,7 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches:
-      - '**'
+      - "**"
 
 jobs:
   ci-check:
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.25'
+          go-version: "1.25"
 
       - name: Cache Go modules
         uses: actions/cache@v3
@@ -68,7 +68,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.PACKAGE_NAME }}:${{ secrets.PACKAGE_VERSION}}
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.PACKAGE_NAME }}:${{ secrets.PACKAGE_VERSION }}
 
       - name: Build and Push Development Docker Image
         uses: docker/build-push-action@v5
@@ -76,17 +76,17 @@ jobs:
           context: .
           file: Dockerfile.dev
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.PACKAGE_NAME }}-dev:${{ secrets.PACKAGE_VERSION}}
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.PACKAGE_NAME }}-dev:${{ secrets.PACKAGE_VERSION }}
 
-#   deploy:
-#     name: Trigger Render Deployment
-#     runs-on: ubuntu-latest
-#     needs: build-and-push
-#     if: github.ref == 'refs/heads/main'
+  deploy:
+    name: Trigger Render Deployment
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
 
-#     steps:
-#       - name: Trigger Render Deploy Hook
-#         run: |
-#           curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
-#       - name: Confirm Deployment Triggered
-#         run: echo "Render deployment triggered successfully."
+    steps:
+      - name: Trigger Render Deploy Hook
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+      - name: Confirm Deployment Triggered
+        run: echo "Render deployment triggered successfully."
