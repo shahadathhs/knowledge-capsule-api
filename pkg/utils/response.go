@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"knowledge-capsule-api/models"
+	"knowledge-capsule-api/app/models"
 )
 
 func JSONResponse(w http.ResponseWriter, status int, success bool, message string, data interface{}) {

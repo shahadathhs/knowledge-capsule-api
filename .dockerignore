@@ -13,7 +13,7 @@
 /go-course
 **/go-course
 bin/
-pkg/
+
 *.mod.tmp
 
 # IDE/editor settings

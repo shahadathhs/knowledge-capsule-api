@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"knowledge-capsule-api/utils"
+	"knowledge-capsule-api/pkg/utils"
 )
 
 func Recover(next http.Handler) http.Handler {

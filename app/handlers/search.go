@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"knowledge-capsule-api/middleware"
-	"knowledge-capsule-api/utils"
+	"knowledge-capsule-api/app/middleware"
+	"knowledge-capsule-api/pkg/utils"
 )
 
 // SearchHandler godoc

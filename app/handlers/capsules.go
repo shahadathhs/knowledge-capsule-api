@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"knowledge-capsule-api/middleware"
-	"knowledge-capsule-api/models"
-	"knowledge-capsule-api/store"
-	"knowledge-capsule-api/utils"
+	"knowledge-capsule-api/app/middleware"
+	"knowledge-capsule-api/app/models"
+	"knowledge-capsule-api/app/store"
+	"knowledge-capsule-api/pkg/utils"
 )
 
 var CapsuleStore = &store.CapsuleStore{FileStore: store.FileStore[models.Capsule]{FilePath: "data/capsules.json"}}

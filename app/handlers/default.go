@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"knowledge-capsule-api/utils"
+	"knowledge-capsule-api/pkg/utils"
 )
 
 func RootHandler(w http.ResponseWriter, r *http.Request) {

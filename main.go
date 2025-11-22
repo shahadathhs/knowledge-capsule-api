@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"time"
 
-	"knowledge-capsule-api/config"
+	"knowledge-capsule-api/pkg/config"
 	_ "knowledge-capsule-api/docs"
-	"knowledge-capsule-api/handlers"
-	"knowledge-capsule-api/middleware"
-	"knowledge-capsule-api/utils"
+	"knowledge-capsule-api/app/handlers"
+	"knowledge-capsule-api/app/middleware"
+	"knowledge-capsule-api/pkg/utils"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 )

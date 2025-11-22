@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"knowledge-capsule-api/models"
+	"knowledge-capsule-api/app/models"
 )
 
 var secretKey []byte

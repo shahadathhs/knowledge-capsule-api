@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"knowledge-capsule-api/models"
-	"knowledge-capsule-api/store"
-	"knowledge-capsule-api/utils"
+	"knowledge-capsule-api/app/models"
+	"knowledge-capsule-api/app/store"
+	"knowledge-capsule-api/pkg/utils"
 )
 
 var TopicStore = &store.TopicStore{FileStore: store.FileStore[models.Topic]{FilePath: "data/topics.json"}}

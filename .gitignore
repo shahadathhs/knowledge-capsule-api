@@ -13,7 +13,7 @@
 
 # Go workspace
 bin/
-pkg/
+
 *.mod.tmp
 
 # IDE - VSCode
